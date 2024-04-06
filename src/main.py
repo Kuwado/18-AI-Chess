@@ -1,5 +1,6 @@
 import pygame as pg
-import rule as rule
+import State as State
+import Rule as Rule
 
 MAX_WIDTH = 1136
 MAX_HEIGHT = 736
@@ -10,9 +11,12 @@ images = {}
 upimages = {}
 whiteChess = (255, 250, 205)
 blackChess = (0, 100, 0)
+hlColor = (0, 191, 255)
+hlColorMain = (255, 255, 0)
 # Kích thước ảnh mới (bao gồm padding)
 NEW_SIZE = (PIECE_WIDTH, PIECE_HEIGHT)
 
+rule = Rule.Rule()
 
 def add_padding(image, padding_color=(0, 0, 0, 0)):
     # Tạo ảnh mới có kích thước lớn hơn và fill với màu trong suốt
@@ -41,12 +45,14 @@ def loadImages():
 def main():
     pg.init()
     screen = pg.display.set_mode((MAX_WIDTH, MAX_HEIGHT))
-    state = rule.GameState()
+    state = State.State()
     board = state.board
     loadImages()  
     running = True
     selected_piece = ()  # Lưu vị trí của quân cờ đang được chọn
     player_click = []   # Lưu vị trí trước và sau
+    
+    
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -65,7 +71,7 @@ def main():
                         move_piece(player_click[0], player_click[1], board)
                         selected_piece = ()  # reset 
                         player_click = []
-        drawGameState(screen, state, board)
+        drawGameState(screen, board, selected_piece)
         pg.display.flip()  # Cập nhật màn hình
 
 # Hàm thay đổi vị trí quân cờ
@@ -79,9 +85,10 @@ def move_piece(start, end, board):
 
 
 # Hàm khởi tạo sàn đấu
-def drawGameState(screen, state, board):
+def drawGameState(screen, board, pos):
     drawBoard(screen)
     drawChessPieces(screen, board) 
+    highlight(screen, board, pos)
 
 
 # Hàm vẽ bàn cờ
@@ -92,8 +99,7 @@ def drawBoard(screen):
     for row in range(8):
         for col in range(8):
             if (row + col) % 2 == 0:  # Xác định màu ô cờ
-                pg.draw.rect(screen, blackChess,
-                             (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
+                pg.draw.rect(screen, blackChess, (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
 
 
 # Hàm vẽ vị trí ban đầu của quân cờ
@@ -103,8 +109,29 @@ def drawChessPieces(screen, board):
         for column in range(8):
             piece = board[row][column]
             if piece != "--":
-                screen.blit(images[piece],
-                            pg.Rect(column * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
+                screen.blit(images[piece], pg.Rect(column * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
+
+# Hàm tô những ô quân cờ có thể đi được
+def highlight(screen, board, pos):
+    if len(pos) == 2 and board[pos[0]][pos[1]][1] == 'p':
+        moves = []
+        rule.getPMove(board, pos[0], pos[1], moves)
+        hl_rect = pg.Rect(pos[1] * PIECE_WIDTH, pos[0] * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT)
+        hl_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+        hl_surface.set_alpha(100)  # Đặt độ trong suốt
+        pg.draw.rect(hl_surface, hlColorMain, hl_surface.get_rect())  # Vẽ hình chữ nhật trong suốt
+        screen.blit(hl_surface, hl_rect)
+        for move in moves:
+            hl_rect = pg.Rect(move[1] * PIECE_WIDTH, move[0] * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT)
+            hl_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+            hl_surface.set_alpha(100)  # Đặt độ trong suốt
+            pg.draw.rect(hl_surface, hlColor, hl_surface.get_rect())  # Vẽ hình chữ nhật trong suốt
+            screen.blit(hl_surface, hl_rect)
+
+
+
+
+
 
 
 if __name__ == "__main__":
