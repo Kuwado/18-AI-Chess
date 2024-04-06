@@ -49,8 +49,8 @@ def main():
     board = state.board
     loadImages()  
     running = True
-    selected_piece = ()  # Lưu vị trí của quân cờ đang được chọn
-    player_click = []   # Lưu vị trí trước và sau
+    selected_piece = ()     # Lưu vị trí của quân cờ đang được chọn
+    player_click = []       # Lưu vị trí trước và sau
     
     
     while running:
@@ -116,20 +116,17 @@ def highlight(screen, board, pos):
     if len(pos) == 2 and board[pos[0]][pos[1]][1] == 'p':
         moves = []
         rule.getPMove(board, pos[0], pos[1], moves)
-        hl_rect = pg.Rect(pos[1] * PIECE_WIDTH, pos[0] * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT)
-        hl_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
-        hl_surface.set_alpha(100)  # Đặt độ trong suốt
-        pg.draw.rect(hl_surface, hlColorMain, hl_surface.get_rect())  # Vẽ hình chữ nhật trong suốt
-        screen.blit(hl_surface, hl_rect)
+        anphaBG(screen, hlColorMain, pos)
         for move in moves:
-            hl_rect = pg.Rect(move[1] * PIECE_WIDTH, move[0] * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT)
-            hl_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
-            hl_surface.set_alpha(100)  # Đặt độ trong suốt
-            pg.draw.rect(hl_surface, hlColor, hl_surface.get_rect())  # Vẽ hình chữ nhật trong suốt
-            screen.blit(hl_surface, hl_rect)
+            anphaBG(screen, hlColor, move)
 
-
-
+# Hàm tô background mờ
+def anphaBG(screen, color, pos):
+    hl_rect = pg.Rect(pos[1] * PIECE_WIDTH, pos[0] * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT)
+    hl_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+    hl_surface.set_alpha(100)  # Đặt độ trong suốt
+    pg.draw.rect(hl_surface, color, hl_surface.get_rect())  # Vẽ hình chữ nhật trong suốt
+    screen.blit(hl_surface, hl_rect)
 
 
 
