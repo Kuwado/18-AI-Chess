@@ -43,10 +43,10 @@ def main():
     screen = pg.display.set_mode((MAX_WIDTH, MAX_HEIGHT))
     state = rule.GameState()
     board = state.board
-    loadImages()  # do this only once before while loop
+    loadImages()  
     running = True
     selected_piece = ()  # Lưu vị trí của quân cờ đang được chọn
-    player_click = []
+    player_click = []   # Lưu vị trí trước và sau
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -63,12 +63,12 @@ def main():
                     player_click.append(selected_piece)
                     if len(player_click) == 2:
                         move_piece(player_click[0], player_click[1], board)
-                        selected_piece = ()  # reset user clicks
+                        selected_piece = ()  # reset 
                         player_click = []
         drawGameState(screen, state, board)
         pg.display.flip()  # Cập nhật màn hình
 
-
+# Hàm thay đổi vị trí quân cờ
 def move_piece(start, end, board):
     # Lấy thông tin về quân cờ tại vị trí xuất phát
     piece_to_move = board[start[0]][start[1]]
@@ -80,8 +80,8 @@ def move_piece(start, end, board):
 
 # Hàm khởi tạo sàn đấu
 def drawGameState(screen, state, board):
-    drawBoard(screen)  # draw squares on the board
-    drawChessPieces(screen, board)  # draw pieces on top of those squares
+    drawBoard(screen)
+    drawChessPieces(screen, board) 
 
 
 # Hàm vẽ bàn cờ
