@@ -1,4 +1,9 @@
 class Rule:
+    
+    
+    
+    
+    
     # Vị trí mà quân tốt có thể đi
     def getPMove(self, board, row, col, move):
         # Nếu là tốt trắng 
@@ -31,3 +36,7 @@ class Rule:
                 move.append((row+1, col-1))     #Chéo trái
             if row < 7 and col < 7 and board[row+1][col+1][0] == 'w':
                 move.append((row+1, col+1))     #Chéo phải
+
+
+   # def getRMove(self, board, row, col, move):
+    #    if board[row][col] 

@@ -61,10 +61,10 @@ def main():
                 location = pg.mouse.get_pos()
                 clicked_row = location[1] // PIECE_HEIGHT
                 clicked_col = location[0] // PIECE_WIDTH
-                if selected_piece == (clicked_row, clicked_col):  # Nếu chưa có quân cờ nào được chọn
+                if selected_piece == (clicked_row, clicked_col):  # Nếu click 1 quân cờ 2 lần
                     selected_piece = ()
                     player_click = []
-                else:  # Nếu đã có quân cờ được chọn
+                else:  # Nếu chưa có quân cờ được chọn
                     selected_piece = (clicked_row, clicked_col)
                     player_click.append(selected_piece)
                     if len(player_click) == 2:
@@ -98,7 +98,7 @@ def drawBoard(screen):
     # Vẽ các ô cờ
     for row in range(8):
         for col in range(8):
-            if (row + col) % 2 == 0:  # Xác định màu ô cờ
+            if (row + col) % 2 == 1:  # Xác định màu ô cờ
                 pg.draw.rect(screen, blackChess, (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
 
 
@@ -113,9 +113,20 @@ def drawChessPieces(screen, board):
 
 # Hàm tô những ô quân cờ có thể đi được
 def highlight(screen, board, pos):
-    if len(pos) == 2 and board[pos[0]][pos[1]][1] == 'p':
-        moves = []
-        rule.getPMove(board, pos[0], pos[1], moves)
+    moves = []
+    if len(pos) == 2:
+        if board[pos[0]][pos[1]][1] == 'p':
+            rule.getPMove(board, pos[0], pos[1], moves)
+        if board[pos[0]][pos[1]][1] == 'n':
+            rule.getPMove(board, pos[0], pos[1], moves)
+        if board[pos[0]][pos[1]][1] == 'r':
+            rule.getPMove(board, pos[0], pos[1], moves)
+        if board[pos[0]][pos[1]][1] == 'b':
+            rule.getPMove(board, pos[0], pos[1], moves)
+        if board[pos[0]][pos[1]][1] == 'q':
+            rule.getPMove(board, pos[0], pos[1], moves)
+        if board[pos[0]][pos[1]][1] == 'k':
+            rule.getPMove(board, pos[0], pos[1], moves)
         anphaBG(screen, hlColorMain, pos)
         for move in moves:
             anphaBG(screen, hlColor, move)
