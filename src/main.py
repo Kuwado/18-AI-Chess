@@ -1,10 +1,11 @@
 import pygame as pg
-import State as State
-import Rule as Rule
+#import State as State
+import rule as Rule
+from src import State
 
-MAX_WIDTH = 1136
-MAX_HEIGHT = 736
-WIDTH = HEIGHT = 640
+MAX_WIDTH = 720
+MAX_HEIGHT = 720
+WIDTH = HEIGHT = 720
 PIECE_WIDTH = PIECE_HEIGHT = HEIGHT // 8
 UP_PIECE_WIDTH = UP_PIECE_HEIGHT = PIECE_HEIGHT * 4 // 5
 images = {}
@@ -37,7 +38,7 @@ def add_padding(image, padding_color=(0, 0, 0, 0)):
 def loadImages():
     pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq', 'bk']
     for piece in pieces:
-        upimages[piece] = pg.transform.smoothscale(pg.image.load("images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
+        upimages[piece] = pg.transform.smoothscale(pg.image.load("/Users/nampham/HUST/18-AI-Chess/images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
         images[piece] = add_padding(upimages[piece])
 
 
@@ -45,13 +46,15 @@ def loadImages():
 def main():
     pg.init()
     screen = pg.display.set_mode((MAX_WIDTH, MAX_HEIGHT))
+    clock = pg.time.Clock()
     state = State.State()
     board = state.board
+    val_move = state.validMove()
+    moved = False
     loadImages()  
     running = True
     selected_piece = ()     # Lưu vị trí của quân cờ đang được chọn
     player_click = []       # Lưu vị trí trước và sau
-    
     
     while running:
         for event in pg.event.get():
@@ -67,28 +70,35 @@ def main():
                 else:  # Nếu chưa có quân cờ được chọn
                     selected_piece = (clicked_row, clicked_col)
                     player_click.append(selected_piece)
-                    if len(player_click) == 2:
-                        move_piece(player_click[0], player_click[1], board)
-                        selected_piece = ()  # reset 
-                        player_click = []
-        drawGameState(screen, board, selected_piece)
+                if len(player_click) == 2:
+                    move = State.Move(player_click[0], player_click[1], board)
+                    print(move.getChessNote())
+                    for i in range(len(val_move)):
+                        if move == val_move[i]:
+                            state.make_move(val_move[i])
+                            moved = True
+                            selected_piece = ()
+                            player_click = []
+                    if not moved:
+                        player_click = [selected_piece]
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_z:
+                    state.remake_move()
+                    moved = True
+        if moved:
+           val_move = state.validMove()
+           #print(val_move)
+           moved = False
+
+        drawGameState(screen, board)
+        clock.tick(15)
         pg.display.flip()  # Cập nhật màn hình
 
-# Hàm thay đổi vị trí quân cờ
-def move_piece(start, end, board):
-    # Lấy thông tin về quân cờ tại vị trí xuất phát
-    piece_to_move = board[start[0]][start[1]]
-    # Di chuyển quân cờ đến vị trí đích
-    board[end[0]][end[1]] = piece_to_move
-    # Đặt ô cờ xuất phát thành trống
-    board[start[0]][start[1]] = "--"
-
-
 # Hàm khởi tạo sàn đấu
-def drawGameState(screen, board, pos):
+def drawGameState(screen, board):
     drawBoard(screen)
-    drawChessPieces(screen, board) 
-    highlight(screen, board, pos)
+    drawChessPieces(screen, board)
+    #highlight(screen, board, pos)
 
 
 # Hàm vẽ bàn cờ
