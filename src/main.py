@@ -1,7 +1,11 @@
 import pygame as pg
 #import State as State
 import rule as Rule
-from src import State
+import State
+import Minimax
+import queue
+
+
 
 MAX_WIDTH = 720
 MAX_HEIGHT = 720
@@ -38,7 +42,7 @@ def add_padding(image, padding_color=(0, 0, 0, 0)):
 def loadImages():
     pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq', 'bk']
     for piece in pieces:
-        upimages[piece] = pg.transform.smoothscale(pg.image.load("/Users/nampham/HUST/18-AI-Chess/images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
+        upimages[piece] = pg.transform.smoothscale(pg.image.load("images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
         images[piece] = add_padding(upimages[piece])
 
 
@@ -63,42 +67,37 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-            elif event.type == pg.MOUSEBUTTONDOWN:  # Xử lý sự kiện khi chuột được nhấn
-                if not game_over:
+    
+        if not game_over:
+            # Lấy danh sách các nước đi hợp lệ từ trạng thái hiện tại
+            valid_moves = state.validMove()
+            if not state.turn:  # Lượt của AI
+                # Tìm nước đi tốt nhất cho AI bằng thuật toán minimax
+                return_queue = queue.Queue()
+                Minimax.findBestMove(state, valid_moves, return_queue)
+                next_move = return_queue.get()  # Đợi cho AI chọn nước đi
+                for i in range(len(valid_moves)):
+                    if next_move == valid_moves[i]:
+                        state.makeMove(valid_moves[i])
+                        animate = True
+                        state.turn = True  # Chuyển lượt sang cho người chơi
+                        break
+            else:  # Lượt của người chơi
+                # Xử lý khi người chơi nhấn chuột
+                if event.type == pg.MOUSEBUTTONDOWN:
                     location = pg.mouse.get_pos()
                     clicked_row = location[1] // PIECE_HEIGHT
                     clicked_col = location[0] // PIECE_WIDTH
-                    if selected_piece == (clicked_row, clicked_col):  # Nếu click 1 quân cờ 2 lần
-                        selected_piece = ()
-                        player_click = []
-                    else:  # Nếu chưa có quân cờ được chọn
+                    if not selected_piece:  # Nếu chưa có quân cờ được chọn
                         selected_piece = (clicked_row, clicked_col)
-                        player_click.append(selected_piece)
-                    if len(player_click) == 2:
-                        move = State.Move(player_click[0], player_click[1], board)
-                        print(move.getChessNote())
-                        for i in range(len(val_move)):
-                            if move == val_move[i]:
-                                state.make_move(val_move[i])
-                                moved = True
-                                animate = True
-                                selected_piece = ()
-                                player_click = []
-                        if not moved:
-                            player_click = [selected_piece]
-            elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_z:
-                    state.remake_move()
-                    moved = True
-                    animate = False
-                    game_over = False
-        if moved:
-            if animate:
-                animateMove(state.moveLog[-1], screen, state.board, clock)
-            val_move = state.validMove()
-             #print(val_move)
-            moved = False
-            animate = False
+                    else:  # Nếu đã có quân cờ được chọn
+                        move = State.Move(selected_piece, (clicked_row, clicked_col), board)
+                        if move in valid_moves:  # Kiểm tra nước đi có hợp lệ không
+                            state.makeMove(move)
+                            animate = True
+                            state.turn = False  # Chuyển lượt sang cho AI
+                        selected_piece = ()  # Đặt lại quân cờ được chọn về trạng thái ban đầu
+
 
         drawGameState(screen, board, state, val_move, selected_piece)
         if state.checkMate:

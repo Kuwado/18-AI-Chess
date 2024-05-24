@@ -1,4 +1,4 @@
-from src import State
+import State
 class Rule:
     # Vị trí mà quân tốt có thể đi
     def getPMove(self, board, row, col, move):

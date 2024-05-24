@@ -19,7 +19,8 @@ class State:
         self.enpassant = ()
         self.curCastlingRights = CatsleRights(True, True, True, True)
         self.castleRightsLog = [CatsleRights(self.curCastlingRights.wks, self.curCastlingRights.bks, self.curCastlingRights.wqs, self.curCastlingRights.bqs )]
-    def make_move(self, move):
+        
+    def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--"
         self.board[move.endRow][move.endCol] = move.piece_move
         self.moveLog.append(move)
@@ -100,7 +101,8 @@ class State:
                     move.append(Move((row, col),(row+1, col+1), self.board))    #Chéo phải
                 elif (row+1, col+1) == self.enpassant:
                     move.append(Move((row,col), (row+1, col+1), self.board, isEnPassantMove = True))
-    def remake_move(self):
+                    
+    def remakeMove(self):
         if len(self.moveLog) != 0:
             move = self.moveLog.pop()
             self.board[move.startRow][move.startCol] = move.piece_move
@@ -133,6 +135,7 @@ class State:
                 else:
                     self.board[move.endRow][move.endCol - 2] = self.board[move.endRow][move.endCol + 1]
                     self.board[move.endRow][move.endCol + 1] = '--'
+                    
     def validMove(self):
         tempEnPassant = self.enpassant
         tempCastleRights = CatsleRights(self.curCastlingRights.wks, self.curCastlingRights.bks, self.curCastlingRights.wqs, self.curCastlingRights.bqs)
@@ -144,12 +147,12 @@ class State:
             self.getCastleMoves(self.bKLocation[0], self.bKLocation[1], moves)
         #make the move
         for i in range(len(moves)-1, -1, -1):
-            self.make_move(moves[i])
+            self.makeMove(moves[i])
             self.turn = not self.turn
             if self.Check():
                 moves.remove(moves[i])
             self.turn = not self.turn
-            self.remake_move()
+            self.remakeMove()
         if len(moves) == 0:
             if self.Check():
                 self.checkMate = True
@@ -158,6 +161,7 @@ class State:
         self.enpassant = tempEnPassant
         self.curCastlingRights= tempCastleRights
         return moves
+    
     #check if current player is in check
     def Check(self):
         if self.turn:
@@ -173,6 +177,7 @@ class State:
             if move.endRow == row and move.endCol == col:
                 return True
         return False
+    
     def possibleMove(self):
         r = rule.Rule()
         moves = []
@@ -193,8 +198,8 @@ class State:
                         r.getQMove(self.board, row, col, moves)
                     if piece == 'k':
                         r.getKMove(self.board, row, col, moves)
-
         return moves
+    
     def updateCatsleRights(self, move):
         if move.piece_move == 'wk':
             self.curCastlingRights.wks = False
@@ -214,6 +219,7 @@ class State:
                     self.curCastlingRights.bqs = False
                 elif move.startCol == 7:
                     self.curCastlingRights.bks = False
+                    
     def getCastleMoves(self, row, col, moves):
         if self.underAttack(row, col):
             return
@@ -241,6 +247,7 @@ class CatsleRights():
         self.bks = bks
         self.wqs = wqs
         self.bqs = bqs
+        
 class Move:
     ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4,
                    "5": 3, "6": 2, "7": 1, "8": 0}
