@@ -5,7 +5,7 @@ piece_score = {"k": 0, "q": 9, "r": 5, "b": 3, "n": 3, "p": 1}
 
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
+DEPTH = 1
 
 def findBestMove(game_state, valid_moves, return_queue):
     next_move = None  # Khởi tạo next_move trước khi sử dụng
