@@ -42,7 +42,7 @@ def add_padding(image, padding_color=(0, 0, 0, 0)):
 def loadImages():
     pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq', 'bk']
     for piece in pieces:
-        upimages[piece] = pg.transform.smoothscale(pg.image.load("images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
+        upimages[piece] = pg.transform.smoothscale(pg.image.load("/Users/nampham/HUST/18-AI-Chess/images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
         images[piece] = add_padding(upimages[piece])
 
 
@@ -63,7 +63,7 @@ def main():
     selected_piece = ()                 # Lưu vị trí của quân cờ được chọn bởi người chơi
     last_selected_piece = ()           # Lưu vị trí trước đó của quân cờ được chọn bởi người chơi
     last_selected_piece_computer = ()  # Lưu vị trí trước đó của quân cờ được chọn bởi máy cơ
-    
+    player_click = []
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -88,20 +88,33 @@ def main():
             else:  # Lượt của người chơi
                 # Xử lý khi người chơi nhấn chuột
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    location = pg.mouse.get_pos()
-                    clicked_row = location[1] // PIECE_HEIGHT
-                    clicked_col = location[0] // PIECE_WIDTH
-                    if not selected_piece:  # Nếu chưa có quân cờ được chọn
-                        selected_piece = (clicked_row, clicked_col)
-                    else:  # Nếu đã có quân cờ được chọn
-                        move = State.Move(selected_piece, (clicked_row, clicked_col), board)
-                        if move in valid_moves:  # Kiểm tra nước đi có hợp lệ không
-                            last_selected_piece = selected_piece  # Cập nhật vị trí trước đó của người chơi
-                            state.makeMove(move)
-                            animate = True
-                            state.turn = False  # Chuyển lượt sang cho AI
-                            moved = True
-                        selected_piece = ()  # Đặt lại quân cờ được chọn về trạng thái ban đầu
+                    if not game_over:
+                        location = pg.mouse.get_pos()
+                        clicked_row = location[1] // PIECE_HEIGHT
+                        clicked_col = location[0] // PIECE_WIDTH
+                        if selected_piece == (clicked_row, clicked_col):  # Nếu click 1 quân cờ 2 lần
+                            selected_piece = ()
+                            player_click = []
+                        else:  # Nếu chưa có quân cờ được chọn
+                            selected_piece = (clicked_row, clicked_col)
+                            player_click.append(selected_piece)
+                        if len(player_click) == 2:
+                            move = State.Move(player_click[0], player_click[1], board)
+                            for i in range(len(val_move)):
+                                if move == val_move[i]:
+                                    state.makeMove(val_move[i])
+                                    moved = True
+                                    animate = True
+                                    selected_piece = ()
+                                    player_click = []
+                            if not moved:
+                                player_click = [selected_piece]
+                elif event.type == pg.KEYDOWN:
+                    if event.key == pg.K_z:
+                        state.remakeMove()
+                        moved = True
+                        animate = False
+                        game_over = False
 
         # Nếu cờ di chuyển    
         if moved:
