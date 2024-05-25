@@ -60,8 +60,9 @@ def main():
     animate = False
     game_over = False
     move_log_font = pg.font.SysFont("Arial", 14, False, False)
-    selected_piece = ()     # Lưu vị trí của quân cờ đang được chọn
-    player_click = []    # Lưu vị trí trước và sau
+    selected_piece = ()                 # Lưu vị trí của quân cờ được chọn bởi người chơi
+    last_selected_piece = ()           # Lưu vị trí trước đó của quân cờ được chọn bởi người chơi
+    last_selected_piece_computer = ()  # Lưu vị trí trước đó của quân cờ được chọn bởi máy cơ
     
     while running:
         for event in pg.event.get():
@@ -78,6 +79,7 @@ def main():
                 next_move = return_queue.get()  # Đợi cho AI chọn nước đi
                 for i in range(len(valid_moves)):
                     if next_move == valid_moves[i]:
+                        last_selected_piece_computer = selected_piece  # Cập nhật vị trí trước đó của máy cơ
                         state.makeMove(valid_moves[i])
                         animate = True
                         moved = True
@@ -94,11 +96,13 @@ def main():
                     else:  # Nếu đã có quân cờ được chọn
                         move = State.Move(selected_piece, (clicked_row, clicked_col), board)
                         if move in valid_moves:  # Kiểm tra nước đi có hợp lệ không
+                            last_selected_piece = selected_piece  # Cập nhật vị trí trước đó của người chơi
                             state.makeMove(move)
                             animate = True
                             state.turn = False  # Chuyển lượt sang cho AI
                             moved = True
                         selected_piece = ()  # Đặt lại quân cờ được chọn về trạng thái ban đầu
+
         # Nếu cờ di chuyển    
         if moved:
             if animate:
@@ -107,7 +111,7 @@ def main():
             moved = False
             animate = False
 
-        drawGameState(screen, board, state, val_move, selected_piece)
+        drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer)
         if state.checkMate:
             game_over = True
             if state.turn:
@@ -122,14 +126,20 @@ def main():
         pg.display.flip()  # Cập nhật màn hình
 
 
-def highlightsq(screen, state, val_move, selected_piece):
+
+def drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer):
+    drawBoard(screen)
+    highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer)
+    drawChessPieces(screen, board)
+
+def highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer):
     if selected_piece != () and state.turn:
         row, col = selected_piece
         if state.board[row][col][0] == 'w':
-            # Create a blue surface for the selected piece
+            # Tạo một bề mặt màu đỏ cho quân cờ được chọn bởi người chơi
             selected_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
             selected_surface.set_alpha(100)
-            selected_surface.fill(pg.Color('blue'))
+            selected_surface.fill(pg.Color('red'))
             screen.blit(selected_surface, (col * PIECE_WIDTH, row * PIECE_HEIGHT))
             
             # Iterate over valid moves and highlight them in yellow
@@ -139,13 +149,30 @@ def highlightsq(screen, state, val_move, selected_piece):
             for move in val_move:
                 if move.startRow == row and move.startCol == col:
                     screen.blit(yellow_surface, (move.endCol * PIECE_WIDTH, move.endRow * PIECE_HEIGHT))
+    
+    # Highlight vị trí trước đó và vị trí hiện tại của máy cơ
+    if last_selected_piece_computer:
+        row, col = last_selected_piece_computer
+        # Tạo một bề mặt màu đỏ cho vị trí trước đó của máy cơ
+        last_selected_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+        last_selected_surface.set_alpha(100)
+        last_selected_surface.fill(pg.Color('blue'))  # Thay đổi màu sắc
+        screen.blit(last_selected_surface, (col * PIECE_WIDTH, row * PIECE_HEIGHT))
+    if state.moveLog:
+        last_move = state.moveLog[-1]
+        start_row, start_col = last_move.startRow, last_move.startCol  # Vị trí ban đầu của nước đi
+        end_row, end_col = last_move.endRow, last_move.endCol  # Vị trí kết thúc của nước đi
 
-                    
-# Hàm khởi tạo sàn đấu
-def drawGameState(screen, board, state, val_move, selected_piece):
-    drawBoard(screen)
-    highlightsq(screen, state, val_move, selected_piece)
-    drawChessPieces(screen, board)
+        # Tạo một bề mặt màu đỏ cho vị trí hiện tại của máy cơ
+        last_selected_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+        last_selected_surface.set_alpha(100)
+        last_selected_surface.fill(pg.Color('blue'))  # Thay đổi màu sắc
+
+        # Vẽ bề mặt này lên màn hình tại vị trí ban đầu và vị trí kết thúc của nước đi cuối cùng
+        screen.blit(last_selected_surface, (start_col * PIECE_WIDTH, start_row * PIECE_HEIGHT))
+        screen.blit(last_selected_surface, (end_col * PIECE_WIDTH, end_row * PIECE_HEIGHT))
+
+
 
 # Hàm vẽ bàn cờ
 def drawBoard(screen):
@@ -168,13 +195,27 @@ def drawChessPieces(screen, board):
                 screen.blit(images[piece], pg.Rect(column * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
 
 def drawEndGameText(screen, text):
-    font = pg.font.SysFont("Helvetica", 32, True, False)
-    text_object = font.render(text, False, pg.Color("gray"))
-    text_location = pg.Rect(0, 0, MAX_WIDTH, MAX_HEIGHT).move(MAX_WIDTH / 2 - text_object.get_width() / 2,
-                                                                 MAX_HEIGHT / 2 - text_object.get_height() / 2)
-    screen.blit(text_object, text_location)
-    text_object = font.render(text, False, pg.Color('black'))
-    screen.blit(text_object, text_location.move(2, 2))
+    font = pg.font.SysFont("Helvetica", 72, True, False)
+    
+    # Vị trí trung tâm màn hình
+    x, y = screen.get_width() // 2, screen.get_height() // 2
+    
+    # Màu chữ và màu glow
+    text_color = (255, 0, 0)  # Chữ màu đỏ
+    glow_color = (255, 255, 0)  # Glow màu vàng
+    glow_radius = 20  # Bán kính glow
+
+    # Vẽ nhiều lớp chữ với các bán kính khác nhau để tạo hiệu ứng glow
+    for i in range(glow_radius, 0, -1):
+        glow_surface = font.render(text, True, glow_color)
+        alpha = int(255 * (i / glow_radius))  # Điều chỉnh độ trong suốt
+        glow_surface.set_alpha(alpha)
+        screen.blit(glow_surface, (x - glow_surface.get_width() // 2, y - glow_surface.get_height() // 2))
+
+    # Vẽ lớp chữ chính
+    text_surface = font.render(text, True, text_color)
+    text_rect = text_surface.get_rect(center=(x, y))
+    screen.blit(text_surface, text_rect)
 
 
 
