@@ -58,49 +58,6 @@ class State:
         #update castiling rights - not king or rook first move
         self.updateCatsleRights(move)
         self.castleRightsLog.append(CatsleRights(self.curCastlingRights.wks, self.curCastlingRights.bks, self.curCastlingRights.wqs, self.curCastlingRights.bqs ))
-
-    def getPMove(self, row, col, move):
-        # Nếu là tốt trắng
-        if self.board[row][col][0] == 'w':
-            # Nếu tốt ở hàng đầu có thể tiến 1 hoặc 2 ô
-            if row == 6 and self.board[row-1][col] == '--':
-                move.append(Move((row, col),(row-1, col), self.board))
-                if self.board[row-2][col] == '--':
-                    move.append(Move((row, col),(row-2, col), self.board))
-            # Nếu tốt khác hàng đầu và hàng cuối -> tiến 1 ô
-            elif row > 0 and self.board[row-1][col] == '--':
-                move.append(Move((row, col), (row-1, col), self.board))
-            # Các vị trí tốt có thể ăn
-            if col - 1 >= 0:
-                if self.board[row-1][col-1][0] == 'b':
-                    move.append(Move((row, col), (row-1, col-1), self.board))     #Chéo trái
-                elif (row-1, col-1) == self.enpassant:
-                    move.append(Move((row,col), (row-1, col-1), self.board, isEnPassantMove = True))
-            if col + 1 <= 7:
-                if self.board[row-1][col+1][0] == 'b':
-                    move.append(Move((row, col), (row-1, col+1), self.board))    #Chéo phải
-                elif (row-1, col+1) == self.enpassant:
-                    move.append(Move((row,col), (row-1, col+1), self.board, isEnPassantMove = True))
-        else:
-            # Nếu tốt ở hàng đầu có thể tiến 1 hoặc 2 ô
-            if row == 1 and self.board[row+1][col] == '--':
-                move.append(Move((row, col),(row+1, col), self.board))
-                if self.board[row+2][col] == '--':
-                    move.append(Move((row, col), (row+2, col), self.board))
-            # Nếu tốt khác hàng đầu và hàng cuối -> tiến 1 ô
-            elif row < 7 and self.board[row+1][col] == '--':
-                move.append(Move((row, col),(row+1, col), self.board))
-            # Các vị trí tốt có thể ăn
-            if col - 1 >= 0:
-                if self.board[row+1][col-1][0] == 'w':
-                    move.append(Move((row, col),(row+1, col-1), self.board))     #Chéo trái
-                elif (row + 1, col - 1) == self.enpassant:
-                    move.append(Move((row, col), (row + 1, col - 1), self.board, isEnPassantMove = True))
-            if col + 1 <= 7:
-                if self.board[row+1][col+1][0] == 'w':
-                    move.append(Move((row, col),(row+1, col+1), self.board))    #Chéo phải
-                elif (row+1, col+1) == self.enpassant:
-                    move.append(Move((row,col), (row+1, col+1), self.board, isEnPassantMove = True))
                     
     def remakeMove(self):
         if len(self.moveLog) != 0:
@@ -187,7 +144,7 @@ class State:
                 if (uTurn == 'w' and self.turn) or (uTurn == 'b' and not self.turn):
                     piece = self.board[row][col][1]
                     if piece == 'p':
-                        self.getPMove(row, col, moves)
+                        r.getPMove(self.board, row, col, moves)
                     if piece == 'r':
                         r.getRMove(self.board, row, col, moves)
                     if piece == 'n':
@@ -229,11 +186,9 @@ class State:
             self.getQueensideCastle(row, col, moves)
 
     def getKingsideCastle(self, row, col, moves):
-           if self.board[row][col+1] == '--' and self.board[row][col+2] == '--':
-               if not self.underAttack(row, col+1) and not self.underAttack(row, col+2):
-                   moves.append(Move((row, col), (row, col+2), self.board, isCastleMove = True))
-
-
+        if self.board[row][col+1] == '--' and self.board[row][col+2] == '--':
+            if not self.underAttack(row, col+1) and not self.underAttack(row, col+2):
+                moves.append(Move((row, col), (row, col+2), self.board, isCastleMove = True))
 
     def getQueensideCastle(self, row, col, moves):
         if self.board[row][col-1] == '--' and self.board[row][col-2] == '--' and self.board[row][col-3]:

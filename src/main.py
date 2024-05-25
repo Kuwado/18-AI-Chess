@@ -67,7 +67,7 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-    
+
         if not game_over:
             # Lấy danh sách các nước đi hợp lệ từ trạng thái hiện tại
             valid_moves = state.validMove()
@@ -80,6 +80,7 @@ def main():
                     if next_move == valid_moves[i]:
                         state.makeMove(valid_moves[i])
                         animate = True
+                        moved = True
                         state.turn = True  # Chuyển lượt sang cho người chơi
                         break
             else:  # Lượt của người chơi
@@ -96,8 +97,15 @@ def main():
                             state.makeMove(move)
                             animate = True
                             state.turn = False  # Chuyển lượt sang cho AI
+                            moved = True
                         selected_piece = ()  # Đặt lại quân cờ được chọn về trạng thái ban đầu
-
+        # Nếu cờ di chuyển    
+        if moved:
+            if animate:
+                animateMove(state.moveLog[-1], screen, state.board, clock)
+            val_move = state.validMove()
+            moved = False
+            animate = False
 
         drawGameState(screen, board, state, val_move, selected_piece)
         if state.checkMate:
@@ -113,19 +121,26 @@ def main():
         clock.tick(15)
         pg.display.flip()  # Cập nhật màn hình
 
-#Highlight
+
 def highlightsq(screen, state, val_move, selected_piece):
-    if selected_piece != ():
+    if selected_piece != () and state.turn:
         row, col = selected_piece
-        if state.board[row][col][0] == ('w' if state.turn else 'b'):
-            s = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
-            s.set_alpha(100)
-            s.fill(pg.Color('blue'))
-            screen.blit(s, (col*PIECE_WIDTH, row*PIECE_HEIGHT))
-            s.fill(pg.Color('yellow'))
+        if state.board[row][col][0] == 'w':
+            # Create a blue surface for the selected piece
+            selected_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+            selected_surface.set_alpha(100)
+            selected_surface.fill(pg.Color('blue'))
+            screen.blit(selected_surface, (col * PIECE_WIDTH, row * PIECE_HEIGHT))
+            
+            # Iterate over valid moves and highlight them in yellow
+            yellow_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+            yellow_surface.set_alpha(100)
+            yellow_surface.fill(pg.Color('yellow'))
             for move in val_move:
                 if move.startRow == row and move.startCol == col:
-                    screen.blit(s, (PIECE_WIDTH*move.endCol, PIECE_HEIGHT*move.endRow))
+                    screen.blit(yellow_surface, (move.endCol * PIECE_WIDTH, move.endRow * PIECE_HEIGHT))
+
+                    
 # Hàm khởi tạo sàn đấu
 def drawGameState(screen, board, state, val_move, selected_piece):
     drawBoard(screen)
@@ -169,7 +184,7 @@ def animateMove(move, screen, board, clock):
     coords = []
     dR = move.endRow - move.startRow
     dC = move.endCol - move.startCol
-    framesPerSq = 10
+    framesPerSq = 5
     frameCount = (abs(dR) + abs(dC))*framesPerSq
     for frame in range(frameCount+1):
         row, col = (move.startRow + dR*frame/frameCount, move.startCol + dC*frame/frameCount)
