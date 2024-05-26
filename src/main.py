@@ -91,7 +91,7 @@ def main():
                         algorithm_selected = True
                 if algorithm_selected and not depth_selected:
                     for i in range(1, 6):
-                        depth_button = pg.Rect(DEPTH_BUTTON_X + (i - 1) * DEPTH_BUTTON_SPACING, DEPTH_BUTTON_Y, DEPTH_BUTTON_WIDTH, DEPTH_BUTTON_HEIGHT)
+                        depth_button = pg.Rect(MAX_WIDTH // 2 - DEPTH_BUTTON_WIDTH // 2, DEPTH_BUTTON_Y + (i - 1) * DEPTH_BUTTON_SPACING, DEPTH_BUTTON_WIDTH, DEPTH_BUTTON_HEIGHT)  # Sắp xếp các nút theo hàng dọc
                         if depth_button.collidepoint(mouse_pos):
                             depth = i
                             print(depth)
@@ -245,6 +245,11 @@ def drawBoard(screen):
         for col in range(8):
             if (row + col) % 2 == 1:  # Xác định màu ô cờ
                 pg.draw.rect(screen, blackChess, (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
+    font = pg.font.Font(None, 24)
+    for i in range(8):
+        text = font.render(str(i+1), True, (0, 0, 0))  # Đổi màu số thành đen
+        screen.blit(text, (i * PIECE_WIDTH, 0))  # Đánh số cột
+        screen.blit(text, (0, i * PIECE_HEIGHT))
 
 # Hàm vẽ vị trí ban đầu của quân cờ
 def drawChessPieces(screen, board):
