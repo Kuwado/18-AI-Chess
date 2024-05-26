@@ -42,7 +42,7 @@ def add_padding(image, padding_color=(0, 0, 0, 0)):
 def loadImages():
     pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq', 'bk']
     for piece in pieces:
-        upimages[piece] = pg.transform.smoothscale(pg.image.load("/Users/nampham/HUST/18-AI-Chess/images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
+        upimages[piece] = pg.transform.smoothscale(pg.image.load("images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
         images[piece] = add_padding(upimages[piece])
 
 
