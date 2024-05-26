@@ -26,6 +26,7 @@ rule = Rule.Rule()
 algorithm = None  # Biến lưu thuật toán được chọn
 minimax_button = pg.Rect(300, 200, 200, 50)  # Nút chọn thuật toán Minimax
 alphabeta_button = pg.Rect(300, 300, 200, 50)  # Nút chọn thuật toán AlphaBeta
+replay_button = pg.Rect(MAX_WIDTH // 2 - 100, MAX_HEIGHT // 2 + 100, 200, 50)  # Vị trí và kích thước của nút "Chơi lại"
 
 def add_padding(image, padding_color=(0, 0, 0, 0)):
     # Tạo ảnh mới có kích thước lớn hơn và fill với màu trong suốt
@@ -79,6 +80,19 @@ def main():
                 elif alphabeta_button.collidepoint(mouse_pos):
                     algorithm = 'alphabeta'
                     algorithm_selected = True  # Đánh dấu đã chọn thuật toán
+                elif game_over and replay_button.collidepoint(mouse_pos):  # Kiểm tra nếu nhấn vào nút "Chơi lại"
+                # Khởi tạo lại trò chơi
+                    state = State.State()
+                    board = state.board
+                    val_move = state.validMove()
+                    moved = False
+                    animate = False
+                    game_over = False
+                    algorithm_selected = False
+                    selected_piece = ()
+                    last_selected_piece = ()
+                    last_selected_piece_computer = ()
+                    player_click = []
 
         if not game_over:
             valid_moves = state.validMove()
@@ -242,6 +256,12 @@ def drawEndGameText(screen, text, text_color):
     text_surface = font.render(text, True, text_color)
     text_rect = text_surface.get_rect(center=(x, y))
     screen.blit(text_surface, text_rect)
+
+    pg.draw.rect(screen, (0, 0, 255), replay_button)  # Vẽ nút màu xanh
+    font = pg.font.Font(None, 24)
+    text = font.render('Chơi lại', True, (255, 255, 255))
+    text_rect = text.get_rect(center=replay_button.center)
+    screen.blit(text, text_rect)
 
 def animateMove(move, screen, board, clock):
     global colors
