@@ -46,9 +46,9 @@ def minimax(game_state, depth, maximizing_player):
 def scoreBoard(game_state):
     if game_state.checkMate:
         if game_state.turn:
-            return CHECKMATE  # black wins
+            return -CHECKMATE  # black wins
         else:
-            return -CHECKMATE  # white wins
+            return +CHECKMATE  # white wins
     elif game_state.staleMate:
         return STALEMATE
     score = 0

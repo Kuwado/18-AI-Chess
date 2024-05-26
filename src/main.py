@@ -164,7 +164,7 @@ def main():
 
         elif state.staleMate:
             game_over = True
-            drawEndGameText(screen, "Stalemate")
+            drawEndGameText(screen, "Stalemate", (127, 127, 127))
         clock.tick(15)
         pg.display.flip()  # Cập nhật màn hình
 

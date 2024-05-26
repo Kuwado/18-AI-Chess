@@ -96,28 +96,36 @@ class State:
     def validMove(self):
         tempEnPassant = self.enpassant
         tempCastleRights = CatsleRights(self.curCastlingRights.wks, self.curCastlingRights.bks, self.curCastlingRights.wqs, self.curCastlingRights.bqs)
-        #generate possible moves
+
+        # Tạo ra các nước đi có thể
         moves = self.possibleMove()
         if self.turn:
             self.getCastleMoves(self.wKLocation[0], self.wKLocation[1], moves)
         else:
             self.getCastleMoves(self.bKLocation[0], self.bKLocation[1], moves)
-        #make the move
-        for i in range(len(moves)-1, -1, -1):
-            self.makeMove(moves[i])
+
+        # Thực hiện nước đi
+        valid_moves = []
+        for move in moves:
+            self.makeMove(move)
             self.turn = not self.turn
-            if self.Check():
-                moves.remove(moves[i])
+            if not self.Check():
+                valid_moves.append(move)
             self.turn = not self.turn
             self.remakeMove()
-        if len(moves) == 0:
+
+        if len(valid_moves) == 0:
             if self.Check():
                 self.checkMate = True
             else:
                 self.staleMate = True
+
+        # Đặt lại các thuộc tính
         self.enpassant = tempEnPassant
-        self.curCastlingRights= tempCastleRights
-        return moves
+        self.curCastlingRights = tempCastleRights
+
+        return valid_moves
+
     
     #check if current player is in check
     def Check(self):
