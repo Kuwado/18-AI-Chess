@@ -245,11 +245,6 @@ def drawBoard(screen):
         for col in range(8):
             if (row + col) % 2 == 1:  # Xác định màu ô cờ
                 pg.draw.rect(screen, blackChess, (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
-    font = pg.font.Font(None, 24)
-    for i in range(8):
-        text = font.render(str(i+1), True, (0, 0, 0))  # Đổi màu số thành đen
-        screen.blit(text, (i * PIECE_WIDTH, 0))  # Đánh số cột
-        screen.blit(text, (0, i * PIECE_HEIGHT))
 
 # Hàm vẽ vị trí ban đầu của quân cờ
 def drawChessPieces(screen, board):
