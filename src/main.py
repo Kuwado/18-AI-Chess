@@ -1,13 +1,11 @@
+import math
+import random
 import pygame as pg
-#import State as State
+import queue
 import rule as Rule
 import State
 import Minimax
-import queue
 import AlphaBeta
-import math
-
-
 
 MAX_WIDTH = 720
 MAX_HEIGHT = 720
@@ -43,14 +41,12 @@ def add_padding(image, padding_color=(0, 0, 0, 0)):
 
     return padded_image
 
-
 # Hàm load ảnh các quân cờ
 def loadImages():
     pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq', 'bk']
     for piece in pieces:
         upimages[piece] = pg.transform.smoothscale(pg.image.load("images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
         images[piece] = add_padding(upimages[piece])
-
 
 # Hàm main
 def main():
@@ -158,7 +154,6 @@ def main():
         clock.tick(15)
         pg.display.flip()  # Cập nhật màn hình
 
-
 def drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected):
     drawBoard(screen)
     highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer)
@@ -206,8 +201,6 @@ def highlightsq(screen, state, val_move, selected_piece, last_selected_piece, la
         screen.blit(last_selected_surface, (start_col * PIECE_WIDTH, start_row * PIECE_HEIGHT))
         screen.blit(last_selected_surface, (end_col * PIECE_WIDTH, end_row * PIECE_HEIGHT))
 
-
-
 # Hàm vẽ bàn cờ
 def drawBoard(screen):
     # Vẽ bàn cờ
@@ -217,7 +210,6 @@ def drawBoard(screen):
         for col in range(8):
             if (row + col) % 2 == 1:  # Xác định màu ô cờ
                 pg.draw.rect(screen, blackChess, (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
-
 
 # Hàm vẽ vị trí ban đầu của quân cờ
 def drawChessPieces(screen, board):
@@ -250,9 +242,6 @@ def drawEndGameText(screen, text, text_color):
     text_surface = font.render(text, True, text_color)
     text_rect = text_surface.get_rect(center=(x, y))
     screen.blit(text_surface, text_rect)
-
-
-
 
 def animateMove(move, screen, board, clock):
     global colors
@@ -290,7 +279,6 @@ def drawButtons(screen):
     pg.draw.rect(screen, (0, 0, 255), alphabeta_button)  # Vẽ nút màu xanh
     text = font.render('AlphaBeta', True, (255, 255, 255))
     screen.blit(text, (alphabeta_button.x + 50, alphabeta_button.y + 10))
-
 
 if __name__ == "__main__":
     main()
