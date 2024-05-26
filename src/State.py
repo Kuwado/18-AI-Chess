@@ -113,20 +113,21 @@ class State:
                 valid_moves.append(move)
             self.turn = not self.turn
             self.remakeMove()
-
-        if len(valid_moves) == 0:
-            if self.Check():
-                self.checkMate = True
-            else:
-                self.staleMate = True
-
+            
+            
         # Đặt lại các thuộc tính
         self.enpassant = tempEnPassant
         self.curCastlingRights = tempCastleRights
 
         return valid_moves
 
-    
+    def checkEndGame(self, valid_moves):
+        if len(valid_moves) == 0:
+            if self.Check():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+
     #check if current player is in check
     def Check(self):
         if self.turn:

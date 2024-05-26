@@ -116,6 +116,7 @@ def main():
 
         if not game_over:
             valid_moves = state.validMove()
+            state.checkEndGame(valid_moves)
             if not state.turn:  # Lượt của AI
                 return_queue = queue.Queue()
 

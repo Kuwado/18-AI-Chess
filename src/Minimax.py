@@ -51,13 +51,14 @@ def scoreBoard(game_state):
             return +CHECKMATE  # white wins
     elif game_state.staleMate:
         return STALEMATE
-    score = 0
-    for row in range(len(game_state.board)):
-        for col in range(len(game_state.board[row])):
-            piece = game_state.board[row][col]
-            if piece != "--":
-                if piece[0] == "w":
-                    score += piece_score[piece[1]]
-                elif piece[0] == "b":
-                    score -= piece_score[piece[1]] 
-    return score
+    else:
+        score = 0
+        for row in range(len(game_state.board)):
+            for col in range(len(game_state.board[row])):
+                piece = game_state.board[row][col]
+                if piece != "--":
+                    if piece[0] == "w":
+                        score += piece_score[piece[1]]
+                    elif piece[0] == "b":
+                        score -= piece_score[piece[1]] 
+        return score
