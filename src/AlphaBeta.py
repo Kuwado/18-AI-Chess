@@ -7,10 +7,13 @@ piece_score = {"k": 0, "q": 90, "r": 50, "b": 30, "n": 30, "p": 10}
 # Giá trị cho tình huống chiếu hết, hòa cờ và độ sâu của thuật toán
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
 
 # Hàm tìm nước đi tốt nhất
+<<<<<<< HEAD
 def findBestMove(game_state, valid_moves, return_queue):
+=======
+def findBestMove(game_state, valid_moves, return_queue, depth):
+>>>>>>> 628c15ebbadb21d471c9ae5d5513758518364773
     next_move = None
     random.shuffle(valid_moves)
     best_score = -CHECKMATE
@@ -18,7 +21,7 @@ def findBestMove(game_state, valid_moves, return_queue):
     beta = math.inf
     for move in valid_moves:
         game_state.makeMove(move)
-        score = alphabeta(game_state, DEPTH - 1, alpha, beta, False)
+        score = alphabeta(game_state, depth - 1, alpha, beta, False)
         game_state.remakeMove()
         if score > best_score:
             best_score = score

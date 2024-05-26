@@ -20,9 +20,16 @@ hlColor = (0, 191, 255)
 hlColorMain = (255, 255, 0)
 # Kích thước ảnh mới (bao gồm padding)
 NEW_SIZE = (PIECE_WIDTH, PIECE_HEIGHT)
+# Vị trí và kích thước của các nút chọn độ sâu
+DEPTH_BUTTON_X = 10
+DEPTH_BUTTON_Y = 290
+DEPTH_BUTTON_WIDTH = 40
+DEPTH_BUTTON_HEIGHT = 40
+DEPTH_BUTTON_SPACING = 50
 
 rule = Rule.Rule()
- 
+
+depth = 3
 algorithm = None  # Biến lưu thuật toán được chọn
 minimax_button = pg.Rect(300, 200, 200, 50)  # Nút chọn thuật toán Minimax
 alphabeta_button = pg.Rect(300, 300, 200, 50)  # Nút chọn thuật toán AlphaBeta
@@ -63,6 +70,7 @@ def main():
     animate = False
     game_over = False
     algorithm_selected = False
+    depth_selected = False  # Khởi tạo biến depth_selected
     move_log_font = pg.font.SysFont("Arial", 14, False, False)
     selected_piece = ()                 
     last_selected_piece = ()           
@@ -74,14 +82,24 @@ def main():
                 running = False
             elif event.type == pg.MOUSEBUTTONDOWN:
                 mouse_pos = pg.mouse.get_pos()
-                if minimax_button.collidepoint(mouse_pos):
-                    algorithm = 'minimax'
-                    algorithm_selected = True  # Đánh dấu đã chọn thuật toán
-                elif alphabeta_button.collidepoint(mouse_pos):
-                    algorithm = 'alphabeta'
-                    algorithm_selected = True  # Đánh dấu đã chọn thuật toán
-                elif game_over and replay_button.collidepoint(mouse_pos):  # Kiểm tra nếu nhấn vào nút "Chơi lại"
-                # Khởi tạo lại trò chơi
+                if not algorithm_selected:
+                    if minimax_button.collidepoint(mouse_pos):
+                        algorithm = 'minimax'
+                        algorithm_selected = True
+                    elif alphabeta_button.collidepoint(mouse_pos):
+                        algorithm = 'alphabeta'
+                        algorithm_selected = True
+                if algorithm_selected and not depth_selected:
+                    for i in range(1, 6):
+                        depth_button = pg.Rect(MAX_WIDTH // 2 - DEPTH_BUTTON_WIDTH // 2, DEPTH_BUTTON_Y + (i - 1) * DEPTH_BUTTON_SPACING, DEPTH_BUTTON_WIDTH, DEPTH_BUTTON_HEIGHT)  # Sắp xếp các nút theo hàng dọc
+                        if depth_button.collidepoint(mouse_pos):
+                            depth = i
+                            print(depth)
+                            depth_selected = True  # Cập nhật depth_selected thành True
+                            break
+
+
+                if game_over and replay_button.collidepoint(mouse_pos):
                     state = State.State()
                     board = state.board
                     val_move = state.validMove()
@@ -89,6 +107,8 @@ def main():
                     animate = False
                     game_over = False
                     algorithm_selected = False
+                    depth_selected = False  # Khởi tạo biến depth_selected
+                    depth = 3  # Đặt lại độ sâu mặc định
                     selected_piece = ()
                     last_selected_piece = ()
                     last_selected_piece_computer = ()
@@ -100,11 +120,9 @@ def main():
                 return_queue = queue.Queue()
 
                 if algorithm == 'minimax':
-                    # Sử dụng thuật toán Minimax
-                    Minimax.findBestMove(state, valid_moves, return_queue)
+                    Minimax.findBestMove(state, valid_moves, return_queue, depth)
                 elif algorithm == 'alphabeta':
-                    # Sử dụng thuật toán AlphaBeta
-                    AlphaBeta.findBestMove(state, valid_moves, return_queue)
+                    AlphaBeta.findBestMove(state, valid_moves, return_queue, depth)
 
                 next_move = return_queue.get()  # Đợi cho AI chọn nước đi
                 for i in range(len(valid_moves)):
@@ -154,7 +172,7 @@ def main():
             moved = False
             animate = False
 
-        drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected)
+        drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected, depth_selected)
         if state.checkMate:
             game_over = True
             if state.turn:
@@ -168,12 +186,15 @@ def main():
         clock.tick(15)
         pg.display.flip()  # Cập nhật màn hình
 
-def drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected):
+def drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected, depth_selected):
     drawBoard(screen)
     highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer)
     drawChessPieces(screen, board)
+    if algorithm_selected and not depth_selected:  # Nếu một thuật toán đã được chọn và độ sâu chưa được chọn
+        show_depth_selection(screen)  # Hiển thị các nút để chọn độ sâu
     if not algorithm_selected:  # Chỉ vẽ nút khi chưa chọn thuật toán
         drawButtons(screen)
+
 
 def highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer):
     if selected_piece != () and state.turn:
@@ -224,6 +245,11 @@ def drawBoard(screen):
         for col in range(8):
             if (row + col) % 2 == 1:  # Xác định màu ô cờ
                 pg.draw.rect(screen, blackChess, (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
+    font = pg.font.Font(None, 24)
+    for i in range(8):
+        text = font.render(str(i+1), True, (0, 0, 0))  # Đổi màu số thành đen
+        screen.blit(text, (i * PIECE_WIDTH, 0))  # Đánh số cột
+        screen.blit(text, (0, i * PIECE_HEIGHT))
 
 # Hàm vẽ vị trí ban đầu của quân cờ
 def drawChessPieces(screen, board):
@@ -259,7 +285,11 @@ def drawEndGameText(screen, text, text_color):
 
     pg.draw.rect(screen, (0, 0, 255), replay_button)  # Vẽ nút màu xanh
     font = pg.font.Font(None, 24)
+<<<<<<< HEAD
     text = font.render('Play again', True, (255, 255, 255))
+=======
+    text = font.render('Start Again', True, (255, 255, 255))
+>>>>>>> 628c15ebbadb21d471c9ae5d5513758518364773
     text_rect = text.get_rect(center=replay_button.center)
     screen.blit(text, text_rect)
 
@@ -283,6 +313,18 @@ def animateMove(move, screen, board, clock):
         screen.blit(images[move.piece_move], pg.Rect(col*PIECE_WIDTH, row*PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
         pg.display.flip()
         clock.tick(60)
+
+def show_depth_selection(screen):
+    font = pg.font.Font(None, 24)
+    depth_text = font.render("Choose depth:", True, (0, 0, 0))  # Đổi màu chữ thành đen
+    screen.blit(depth_text, (MAX_WIDTH // 2 - depth_text.get_width() // 2, 200))  
+
+    for i in range(1, 6):  # Thêm một nút chọn độ sâu
+        depth_button = pg.Rect(MAX_WIDTH // 2 - DEPTH_BUTTON_WIDTH // 2, DEPTH_BUTTON_Y + (i - 1) * DEPTH_BUTTON_SPACING, DEPTH_BUTTON_WIDTH, DEPTH_BUTTON_HEIGHT)  # Sắp xếp các nút theo hàng dọc
+        pg.draw.rect(screen, (0, 0, 255), depth_button)
+        depth_value = font.render(str(i), True, (0, 0, 0))  # Đổi màu số thành đen
+        screen.blit(depth_value, (MAX_WIDTH // 2 - depth_value.get_width() // 2, DEPTH_BUTTON_Y + (i - 1) * DEPTH_BUTTON_SPACING + DEPTH_BUTTON_HEIGHT // 2 - depth_value.get_height() // 2))  # Đặt số ở giữa nút
+
 
 def drawButtons(screen):
     screen_width = screen.get_width()  # Lấy chiều rộng của màn hình
