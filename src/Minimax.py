@@ -22,7 +22,7 @@ def findBestMove(game_state, valid_moves, return_queue):
 
 
 def minimax(game_state, depth, maximizing_player):
-    if depth == 0:
+    if depth == 0 or game_state.checkMate or game_state.staleMate:
         return -scoreBoard(game_state)
     
     if maximizing_player:
@@ -46,9 +46,9 @@ def minimax(game_state, depth, maximizing_player):
 def scoreBoard(game_state):
     if game_state.checkMate:
         if game_state.turn:
-            return -CHECKMATE  # black wins
+            return CHECKMATE  # black wins
         else:
-            return CHECKMATE  # white wins
+            return -CHECKMATE  # white wins
     elif game_state.staleMate:
         return STALEMATE
     score = 0
@@ -59,8 +59,8 @@ def scoreBoard(game_state):
                 if piece[0] == "w":
                     score += piece_score[piece[1]]
                 elif piece[0] == "b":
-                    score -= piece_score[piece[1]]  # Sử dụng -= để trừ điểm
-    return float(score)  # Chuyển đổi kiểu dữ liệu trả về thành số thực
+                    score -= piece_score[piece[1]] 
+    return float(score)
 
 
 def findRandomMove(valid_moves):
