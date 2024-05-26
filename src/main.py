@@ -189,6 +189,7 @@ def main():
 def drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected, depth_selected):
     drawBoard(screen)
     highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer)
+    highlight_king_in_check(screen, state)
     drawChessPieces(screen, board)
     if algorithm_selected and not depth_selected:  # Nếu một thuật toán đã được chọn và độ sâu chưa được chọn
         show_depth_selection(screen)  # Hiển thị các nút để chọn độ sâu
@@ -330,6 +331,15 @@ def show_depth_selection(screen):
 
         screen.blit(depth_value, (MAX_WIDTH // 2 - depth_value.get_width() // 2, DEPTH_BUTTON_Y + (i - 1) * DEPTH_BUTTON_SPACING + DEPTH_BUTTON_HEIGHT // 2 - depth_value.get_height() // 2))  # Đặt số ở giữa nút
 
+def highlight_king_in_check(screen, state):
+    if state.Check():
+        king_pos = state.wKLocation if state.turn else state.bKLocation
+        row, col = king_pos
+        # Tạo một bề mặt màu đỏ cho quân vua đang bị chiếu
+        selected_surface = pg.Surface((PIECE_WIDTH, PIECE_HEIGHT))
+        selected_surface.set_alpha(100)  # Điều chỉnh độ trong suốt
+        selected_surface.fill(pg.Color('red'))  # Đổi màu sắc
+        screen.blit(selected_surface, (col * PIECE_WIDTH, row * PIECE_HEIGHT))
 
 def drawButtons(screen):
     screen_width = screen.get_width()  # Lấy chiều rộng của màn hình
