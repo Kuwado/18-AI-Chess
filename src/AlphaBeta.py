@@ -7,11 +7,11 @@ piece_score = {"k": 0, "q": 9, "r": 5, "b": 3, "n": 3, "p": 1}
 # Giá trị cho tình huống chiếu hết, hòa cờ và độ sâu của thuật toán
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
+DEPTH = 4
 
 # Hàm tìm nước đi tốt nhất
 def findBestMove(game_state, valid_moves, return_queue):
-    next_move = None  # Khởi tạo next_move trước khi sử dụng
+    next_move = None
     random.shuffle(valid_moves)
     best_score = -CHECKMATE
     alpha = -math.inf
@@ -29,11 +29,15 @@ def findBestMove(game_state, valid_moves, return_queue):
 # Thuật toán alpha-beta
 def alphabeta(game_state, depth, alpha, beta, maximizing_player):
     if depth == 0:
-        return -scoreBoard(game_state)
+        return scoreBoard(game_state)
+
+    valid_moves = game_state.validMove()
+    if game_state.checkMate or game_state.staleMate:
+        return scoreBoard(game_state)
 
     if maximizing_player:
         max_eval = -math.inf
-        for move in game_state.validMove():
+        for move in valid_moves:
             game_state.makeMove(move)
             eval_score = alphabeta(game_state, depth - 1, alpha, beta, False)
             game_state.remakeMove()
@@ -44,7 +48,7 @@ def alphabeta(game_state, depth, alpha, beta, maximizing_player):
         return max_eval
     else:
         min_eval = math.inf
-        for move in game_state.validMove():
+        for move in valid_moves:
             game_state.makeMove(move)
             eval_score = alphabeta(game_state, depth - 1, alpha, beta, True)
             game_state.remakeMove()
@@ -71,9 +75,5 @@ def scoreBoard(game_state):
                 if piece[0] == "w":
                     score += piece_score[piece[1]]
                 elif piece[0] == "b":
-                    score -= piece_score[piece[1]]  # Sử dụng -= để trừ điểm
-    return float(score)  # Chuyển đổi kiểu dữ liệu trả về thành số thực
-
-# Hàm tìm nước đi ngẫu nhiên
-def findRandomMove(valid_moves):
-    return random.choice(valid_moves)
+                    score -= piece_score[piece[1]]
+    return float(score)

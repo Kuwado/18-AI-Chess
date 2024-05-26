@@ -143,7 +143,7 @@ def main():
         drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected)
         if state.checkMate:
             game_over = True
-            if state.turn:
+            if (state.turn):
                 drawEndGameText(screen, "Black wins by checkmate", (0, 0, 0))
             else:
                 drawEndGameText(screen, "White wins by checkmate", (255, 255, 255))
