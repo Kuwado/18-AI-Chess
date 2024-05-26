@@ -259,7 +259,7 @@ def drawEndGameText(screen, text, text_color):
 
     pg.draw.rect(screen, (0, 0, 255), replay_button)  # Vẽ nút màu xanh
     font = pg.font.Font(None, 24)
-    text = font.render('Chơi lại', True, (255, 255, 255))
+    text = font.render('Play again', True, (255, 255, 255))
     text_rect = text.get_rect(center=replay_button.center)
     screen.blit(text, text_rect)
 
