@@ -1,11 +1,11 @@
+import math
+import random
 import pygame as pg
-#import State as State
+import queue
 import rule as Rule
 import State
 import Minimax
-import queue
-
-
+import AlphaBeta
 
 MAX_WIDTH = 720
 MAX_HEIGHT = 720
@@ -22,6 +22,11 @@ hlColorMain = (255, 255, 0)
 NEW_SIZE = (PIECE_WIDTH, PIECE_HEIGHT)
 
 rule = Rule.Rule()
+ 
+algorithm = None  # Biến lưu thuật toán được chọn
+minimax_button = pg.Rect(300, 200, 200, 50)  # Nút chọn thuật toán Minimax
+alphabeta_button = pg.Rect(300, 300, 200, 50)  # Nút chọn thuật toán AlphaBeta
+replay_button = pg.Rect(MAX_WIDTH // 2 - 100, MAX_HEIGHT // 2 + 100, 200, 50)  # Vị trí và kích thước của nút "Chơi lại"
 
 def add_padding(image, padding_color=(0, 0, 0, 0)):
     # Tạo ảnh mới có kích thước lớn hơn và fill với màu trong suốt
@@ -37,14 +42,12 @@ def add_padding(image, padding_color=(0, 0, 0, 0)):
 
     return padded_image
 
-
 # Hàm load ảnh các quân cờ
 def loadImages():
     pieces = ['wp', 'wr', 'wn', 'wb', 'wq', 'wk', 'bp', 'br', 'bn', 'bb', 'bq', 'bk']
     for piece in pieces:
         upimages[piece] = pg.transform.smoothscale(pg.image.load("images/pieces/" + piece + ".png"),(UP_PIECE_WIDTH, UP_PIECE_HEIGHT))
         images[piece] = add_padding(upimages[piece])
-
 
 # Hàm main
 def main():
@@ -59,23 +62,50 @@ def main():
     running = True
     animate = False
     game_over = False
+    algorithm_selected = False
     move_log_font = pg.font.SysFont("Arial", 14, False, False)
-    selected_piece = ()                 # Lưu vị trí của quân cờ được chọn bởi người chơi
-    last_selected_piece = ()           # Lưu vị trí trước đó của quân cờ được chọn bởi người chơi
-    last_selected_piece_computer = ()  # Lưu vị trí trước đó của quân cờ được chọn bởi máy cơ
+    selected_piece = ()                 
+    last_selected_piece = ()           
+    last_selected_piece_computer = () 
     player_click = []
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                mouse_pos = pg.mouse.get_pos()
+                if minimax_button.collidepoint(mouse_pos):
+                    algorithm = 'minimax'
+                    algorithm_selected = True  # Đánh dấu đã chọn thuật toán
+                elif alphabeta_button.collidepoint(mouse_pos):
+                    algorithm = 'alphabeta'
+                    algorithm_selected = True  # Đánh dấu đã chọn thuật toán
+                elif game_over and replay_button.collidepoint(mouse_pos):  # Kiểm tra nếu nhấn vào nút "Chơi lại"
+                # Khởi tạo lại trò chơi
+                    state = State.State()
+                    board = state.board
+                    val_move = state.validMove()
+                    moved = False
+                    animate = False
+                    game_over = False
+                    algorithm_selected = False
+                    selected_piece = ()
+                    last_selected_piece = ()
+                    last_selected_piece_computer = ()
+                    player_click = []
 
         if not game_over:
-            # Lấy danh sách các nước đi hợp lệ từ trạng thái hiện tại
             valid_moves = state.validMove()
             if not state.turn:  # Lượt của AI
-                # Tìm nước đi tốt nhất cho AI bằng thuật toán minimax
                 return_queue = queue.Queue()
-                Minimax.findBestMove(state, valid_moves, return_queue)
+
+                if algorithm == 'minimax':
+                    # Sử dụng thuật toán Minimax
+                    Minimax.findBestMove(state, valid_moves, return_queue)
+                elif algorithm == 'alphabeta':
+                    # Sử dụng thuật toán AlphaBeta
+                    AlphaBeta.findBestMove(state, valid_moves, return_queue)
+
                 next_move = return_queue.get()  # Đợi cho AI chọn nước đi
                 for i in range(len(valid_moves)):
                     if next_move == valid_moves[i]:
@@ -112,7 +142,7 @@ def main():
                 elif event.type == pg.KEYDOWN:
                     if event.key == pg.K_z:
                         state.remakeMove()
-                        moved = True
+                        moved = True  
                         animate = False
                         game_over = False
 
@@ -124,13 +154,13 @@ def main():
             moved = False
             animate = False
 
-        drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer)
+        drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected)
         if state.checkMate:
             game_over = True
             if state.turn:
-                drawEndGameText(screen, "Black wins by checkmate")
+                drawEndGameText(screen, "Black wins by checkmate", (0, 0, 0))
             else:
-                drawEndGameText(screen, "White wins by checkmate")
+                drawEndGameText(screen, "White wins by checkmate", (255, 255, 255))
 
         elif state.staleMate:
             game_over = True
@@ -138,12 +168,12 @@ def main():
         clock.tick(15)
         pg.display.flip()  # Cập nhật màn hình
 
-
-
-def drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer):
+def drawGameState(screen, board, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer, algorithm_selected):
     drawBoard(screen)
     highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer)
     drawChessPieces(screen, board)
+    if not algorithm_selected:  # Chỉ vẽ nút khi chưa chọn thuật toán
+        drawButtons(screen)
 
 def highlightsq(screen, state, val_move, selected_piece, last_selected_piece, last_selected_piece_computer):
     if selected_piece != () and state.turn:
@@ -185,8 +215,6 @@ def highlightsq(screen, state, val_move, selected_piece, last_selected_piece, la
         screen.blit(last_selected_surface, (start_col * PIECE_WIDTH, start_row * PIECE_HEIGHT))
         screen.blit(last_selected_surface, (end_col * PIECE_WIDTH, end_row * PIECE_HEIGHT))
 
-
-
 # Hàm vẽ bàn cờ
 def drawBoard(screen):
     # Vẽ bàn cờ
@@ -197,7 +225,6 @@ def drawBoard(screen):
             if (row + col) % 2 == 1:  # Xác định màu ô cờ
                 pg.draw.rect(screen, blackChess, (col * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
 
-
 # Hàm vẽ vị trí ban đầu của quân cờ
 def drawChessPieces(screen, board):
     # Vẽ quân cờ
@@ -207,15 +234,15 @@ def drawChessPieces(screen, board):
             if piece != "--":
                 screen.blit(images[piece], pg.Rect(column * PIECE_WIDTH, row * PIECE_HEIGHT, PIECE_WIDTH, PIECE_HEIGHT))
 
-def drawEndGameText(screen, text):
+def drawEndGameText(screen, text, text_color):
     font = pg.font.SysFont("Helvetica", 72, True, False)
     
     # Vị trí trung tâm màn hình
     x, y = screen.get_width() // 2, screen.get_height() // 2
     
     # Màu chữ và màu glow
-    text_color = (255, 0, 0)  # Chữ màu đỏ
-    glow_color = (255, 255, 0)  # Glow màu vàng
+    # text_color = (255, 255, 255)  # Chữ màu đỏ
+    glow_color = (0, 0, 0)  # Glow màu vàng
     glow_radius = 20  # Bán kính glow
 
     # Vẽ nhiều lớp chữ với các bán kính khác nhau để tạo hiệu ứng glow
@@ -230,7 +257,11 @@ def drawEndGameText(screen, text):
     text_rect = text_surface.get_rect(center=(x, y))
     screen.blit(text_surface, text_rect)
 
-
+    pg.draw.rect(screen, (0, 0, 255), replay_button)  # Vẽ nút màu xanh
+    font = pg.font.Font(None, 24)
+    text = font.render('Chơi lại', True, (255, 255, 255))
+    text_rect = text.get_rect(center=replay_button.center)
+    screen.blit(text, text_rect)
 
 def animateMove(move, screen, board, clock):
     global colors
@@ -253,6 +284,21 @@ def animateMove(move, screen, board, clock):
         pg.display.flip()
         clock.tick(60)
 
+def drawButtons(screen):
+    screen_width = screen.get_width()  # Lấy chiều rộng của màn hình
+
+    # Vẽ nút minimax
+    minimax_button.x = screen_width / 4 - minimax_button.width / 2  # Cập nhật vị trí x của nút minimax
+    pg.draw.rect(screen, (0, 0, 255), minimax_button)  # Vẽ nút màu xanh
+    font = pg.font.Font(None, 24)
+    text = font.render('Minimax', True, (255, 255, 255))
+    screen.blit(text, (minimax_button.x + 50, minimax_button.y + 10))
+
+    # Vẽ nút alphabeta
+    alphabeta_button.x = 3 * screen_width / 4 - alphabeta_button.width / 2  # Cập nhật vị trí x của nút alphabeta
+    pg.draw.rect(screen, (0, 0, 255), alphabeta_button)  # Vẽ nút màu xanh
+    text = font.render('AlphaBeta', True, (255, 255, 255))
+    screen.blit(text, (alphabeta_button.x + 50, alphabeta_button.y + 10))
 
 if __name__ == "__main__":
     main()
