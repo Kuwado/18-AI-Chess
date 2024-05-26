@@ -71,8 +71,8 @@ def scoreBoard(game_state):
                 if piece[0] == "w":
                     score += piece_score[piece[1]]
                 elif piece[0] == "b":
-                    score -= piece_score[piece[1]]  # Sử dụng -= để trừ điểm
-    return float(score)  # Chuyển đổi kiểu dữ liệu trả về thành số thực
+                    score -= piece_score[piece[1]] 
+    return score
 
 # Hàm tìm nước đi ngẫu nhiên
 def findRandomMove(valid_moves):

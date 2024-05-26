@@ -60,8 +60,4 @@ def scoreBoard(game_state):
                     score += piece_score[piece[1]]
                 elif piece[0] == "b":
                     score -= piece_score[piece[1]] 
-    return float(score)
-
-
-def findRandomMove(valid_moves):
-    return random.choice(valid_moves)
+    return score
