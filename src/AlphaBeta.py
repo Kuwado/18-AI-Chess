@@ -28,7 +28,7 @@ def findBestMove(game_state, valid_moves, return_queue, depth):
 
 # Thuật toán alpha-beta
 def alphabeta(game_state, depth, alpha, beta, maximizing_player):
-    if depth == 0:
+    if depth == 0 or game_state.checkMate or game_state.staleMate:
         return -scoreBoard(game_state)
 
     if maximizing_player:
